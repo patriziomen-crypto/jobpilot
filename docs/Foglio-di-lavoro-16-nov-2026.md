@@ -57,6 +57,7 @@ Stato a fine sessione: **l'app è completa e funzionante**, l'eseguibile sul Des
 | Cosa | Percorso |
 |---|---|
 | Progetto (git) | `C:\Users\patri\Desktop\Gestione-Linkedin` |
+| **Portfolio su GitHub** | https://github.com/patriziomen-crypto/jobpilot (pubblico; storia pulita senza CV, telefono ed email; la storia completa resta sul PC nel ramo `storia-locale`) |
 | Eseguibile | `dist\JobPilot\JobPilot.exe` (collegamento `JobPilot` sul Desktop) |
 | Ricostruire l'exe dopo una modifica | `.\scripts\build-desktop.ps1` (chiude l'app, ricompila frontend e backend, rifà l'exe) |
 | Impostazioni e chiavi AI | `%LOCALAPPDATA%\JobPilot\jobpilot.properties` (leggibile solo dal tuo utente) |
