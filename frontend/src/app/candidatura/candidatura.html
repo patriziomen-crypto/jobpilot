@@ -1,0 +1,244 @@
+@if (caricamento()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (candidatura(); as c) {
+  <div class="pagina">
+    <div class="titolo-pagina">
+      <a mat-icon-button routerLink="/" matTooltip="Torna alla dashboard"><mat-icon>arrow_back</mat-icon></a>
+      <div class="intestazione">
+        <h1>{{ c.job.title }}</h1>
+        <div class="muted">
+          <span class="chip-fonte" [class]="'chip-fonte ' + c.job.source">{{ c.job.source }}</span>
+          {{ c.job.company || 'Azienda non indicata' }}
+          @if (c.job.location) { · {{ c.job.location }} }
+          @if (c.job.remote) { · remoto }
+          · trovata il {{ c.job.foundAt | date:'d MMM yyyy' }}
+        </div>
+      </div>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="campo-stato">
+        <mat-label>Stato</mat-label>
+        <mat-select [value]="c.status" (valueChange)="cambiaStato($event)">
+          @for (s of stati; track s.value) {
+            <mat-option [value]="s.value">{{ s.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button mat-icon-button (click)="elimina()" matTooltip="Elimina candidatura"><mat-icon>delete</mat-icon></button>
+    </div>
+
+    @if (operazione() === 'analisi') {
+      <div class="attesa"><mat-progress-bar mode="indeterminate" /> Analisi dell'offerta in corso (con l'AI può volerci fino a 30 secondi)…</div>
+    }
+    @if (operazione() === 'documenti') {
+      <div class="attesa"><mat-progress-bar mode="indeterminate" /> Scrittura di CV e lettera in corso (con l'AI fino a un minuto)…</div>
+    }
+
+    <div class="colonne">
+      <!-- Colonna sinistra: passi della candidatura -->
+      <div class="colonna-passi">
+
+        <mat-card appearance="outlined" class="passo">
+          <mat-card-header>
+            <div mat-card-avatar class="numero" [class.fatto]="analisi()">1</div>
+            <mat-card-title>Analisi dell'offerta</mat-card-title>
+            <mat-card-subtitle>Quanto è compatibile con il tuo profilo</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (analisi(); as a) {
+              <div class="riga-punteggio">
+                <span class="punteggio" [class]="'punteggio ' + classePunteggio(a.score)">{{ a.score }}/100</span>
+                <p>{{ a.summary }}</p>
+              </div>
+              <div class="griglia-analisi">
+                <div>
+                  <h4><mat-icon class="ok">check_circle</mat-icon> Requisiti soddisfatti</h4>
+                  <ul>@for (r of a.matchedRequirements; track r) { <li>{{ r }}</li> } @empty { <li class="muted">nessuno</li> }</ul>
+                </div>
+                <div>
+                  <h4><mat-icon class="ko">cancel</mat-icon> Requisiti mancanti</h4>
+                  <ul>@for (r of a.missingRequirements; track r) { <li>{{ r }}</li> } @empty { <li class="muted">nessuno</li> }</ul>
+                </div>
+              </div>
+              @if (a.redFlags?.length) {
+                <div class="redflag">
+                  <h4><mat-icon>warning</mat-icon> Attenzione</h4>
+                  <ul>@for (r of a.redFlags; track r) { <li>{{ r }}</li> }</ul>
+                </div>
+              }
+              @if (a.keywords?.length) {
+                <h4>Parole chiave dell'annuncio</h4>
+                <mat-chip-set>
+                  @for (k of a.keywords; track k) { <mat-chip>{{ k }}</mat-chip> }
+                </mat-chip-set>
+              }
+              <p class="muted piccolo">Analizzata il {{ a.createdAt | date:'d MMM yyyy, HH:mm' }} con {{ a.provider || a.model }}@if (a.provider && a.model) { ({{ a.model }}) }</p>
+            } @else {
+              <p class="muted">Non ancora analizzata.</p>
+            }
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button mat-flat-button (click)="analizza()" [disabled]="operazione() !== ''">
+              <mat-icon>psychology</mat-icon> {{ analisi() ? 'Rianalizza' : 'Analizza' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="passo">
+          <mat-card-header>
+            <div mat-card-avatar class="numero" [class.fatto]="haDocumenti()">2</div>
+            <mat-card-title>CV e lettera su misura</mat-card-title>
+            <mat-card-subtitle>Generati dall'AI (o dalla modalità base) solo con i dati veri del tuo profilo</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (c.cvPath) {
+              <p><mat-icon class="inline">picture_as_pdf</mat-icon> CV: <code>{{ c.cvPath }}</code></p>
+            }
+            @if (c.letterPath) {
+              <p><mat-icon class="inline">picture_as_pdf</mat-icon> Lettera: <code>{{ c.letterPath }}</code></p>
+            }
+            @if (c.coverLetter) {
+              <mat-expansion-panel class="pannello-lettera">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Testo della lettera</mat-panel-title>
+                </mat-expansion-panel-header>
+                <pre class="lettera">{{ c.coverLetter }}</pre>
+                <button mat-stroked-button (click)="copia(c.coverLetter, 'Lettera')"><mat-icon>content_copy</mat-icon> Copia</button>
+              </mat-expansion-panel>
+            }
+            @if (!haDocumenti()) {
+              <p class="muted">Non ancora generati. Conviene prima fare l'analisi: verranno usate le parole chiave trovate.</p>
+            }
+          </mat-card-content>
+          <mat-card-actions align="end">
+            @if (haDocumenti()) {
+              <button mat-stroked-button (click)="apriCartella()"><mat-icon>folder_open</mat-icon> Apri cartella</button>
+              <button mat-stroked-button (click)="genera(true, false)" [disabled]="operazione() !== ''">Rigenera CV</button>
+              <button mat-stroked-button (click)="genera(false, true)" [disabled]="operazione() !== ''">Rigenera lettera</button>
+            } @else {
+              <button mat-flat-button (click)="genera()" [disabled]="operazione() !== ''">
+                <mat-icon>auto_awesome</mat-icon> Genera CV e lettera
+              </button>
+            }
+          </mat-card-actions>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="passo">
+          <mat-card-header>
+            <div mat-card-avatar class="numero" [class.fatto]="c.sentAt">3</div>
+            <mat-card-title>Invia la candidatura</mat-card-title>
+            <mat-card-subtitle>L'app compila il modulo nel suo browser (LinkedIn o Indeed); oppure fai tu a mano</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (!c.sentAt) {
+              <div class="invio-assistito">
+                <button mat-flat-button (click)="compilaCandidatura()" [disabled]="invioAttivo() || !c.job.url">
+                  <mat-icon>smart_button</mat-icon> Compila la candidatura nel browser
+                </button>
+                <span class="muted piccolo">Carica il CV, risponde alle domande con le tue risposte pronte (e l'AI), poi si ferma prima di "Invia" salvo invio automatico nelle Impostazioni.</span>
+              </div>
+            }
+
+            @if (invio(); as inv) {
+              @if (inv.applicationId === c.id && (inv.running || inv.windowOpen || inv.outcome)) {
+                <div class="pannello-invio" [class.in-corso]="inv.running">
+                  @if (inv.running) { <mat-progress-bar mode="indeterminate" /> }
+                  @if (esitoTesto()) { <p class="esito">{{ esitoTesto() }}</p> }
+                  @if (inv.unanswered.length) {
+                    <p><strong>Domande a cui non ho saputo rispondere:</strong></p>
+                    <ul>@for (q of inv.unanswered; track q) { <li>{{ q }}</li> }</ul>
+                    <p class="muted piccolo">Aggiungile alle "Risposte pronte" del Profilo per la prossima volta.</p>
+                  }
+                  @if (inv.answered.length) {
+                    <details><summary>Risposte compilate ({{ inv.answered.length }})</summary>
+                      <ul>@for (a of inv.answered; track a) { <li>{{ a }}</li> }</ul>
+                    </details>
+                  }
+                  <pre class="log-invio">@for (riga of inv.log; track $index) {{{ riga }}
+}</pre>
+                  @if (inv.windowOpen && !inv.running) {
+                    <div class="azioni-invio">
+                      <button mat-flat-button (click)="hoInviato()"><mat-icon>task_alt</mat-icon> Ho inviato</button>
+                      <button mat-stroked-button (click)="annullaInvio()"><mat-icon>close</mat-icon> Annulla e chiudi la finestra</button>
+                    </div>
+                  }
+                </div>
+              }
+            }
+
+            <details class="manuale">
+              <summary>Preferisci fare a mano? Ecco i passi</summary>
+              <ol class="checklist">
+                <li>Apri l'annuncio e clicca "Candidati" sul sito.</li>
+                <li>Allega il CV PDF dalla cartella della candidatura.</li>
+                <li>Se chiesto, incolla la lettera (pulsante "Copia" qui sopra).</li>
+                <li>Per le domande del modulo usa le risposte pronte qui sotto.</li>
+                <li>Dopo l'invio, premi "Segna come inviata".</li>
+              </ol>
+            </details>
+            @if (profilo()?.standardAnswers?.length) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Risposte pronte per il modulo</mat-panel-title>
+                </mat-expansion-panel-header>
+                <table class="risposte">
+                  @for (r of profilo()!.standardAnswers; track r.question) {
+                    <tr>
+                      <td class="domanda">{{ r.question }}</td>
+                      <td>{{ r.answer }}</td>
+                      <td><button mat-icon-button (click)="copia(r.answer, 'Risposta')" matTooltip="Copia"><mat-icon>content_copy</mat-icon></button></td>
+                    </tr>
+                  }
+                </table>
+              </mat-expansion-panel>
+            }
+            @if (c.sentAt) {
+              <p class="inviata"><mat-icon class="inline ok">task_alt</mat-icon> Inviata il {{ c.sentAt | date:'d MMM yyyy, HH:mm' }}
+                @if (c.followUpAt) { · ricontatta dal {{ c.followUpAt | date:'d MMM' }} }
+              </p>
+            }
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button mat-stroked-button (click)="apriAnnuncio()" [disabled]="!c.job.url"><mat-icon>open_in_new</mat-icon> Apri annuncio</button>
+            @if (haDocumenti()) {
+              <button mat-stroked-button (click)="apriCartella()"><mat-icon>folder_open</mat-icon> Apri cartella</button>
+            }
+            @if (!c.sentAt) {
+              <button mat-flat-button (click)="segnaInviata()"><mat-icon>send</mat-icon> Segna come inviata</button>
+            }
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <!-- Colonna destra: annuncio e note -->
+      <div class="colonna-info">
+        <mat-card appearance="outlined">
+          <mat-card-header><mat-card-title>Annuncio</mat-card-title></mat-card-header>
+          <mat-card-content>
+            @if (c.job.url) {
+              <p class="muted piccolo"><a [href]="c.job.url" target="_blank" rel="noopener">{{ c.job.url }}</a></p>
+            }
+            <div class="testo-annuncio">{{ c.job.description }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="outlined">
+          <mat-card-header><mat-card-title>Note e promemoria</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="outline" class="pieno">
+              <mat-label>Note (contatti, colloqui, impressioni)</mat-label>
+              <textarea matInput rows="5" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="pieno">
+              <mat-label>Ricontattare il</mat-label>
+              <input matInput type="date" [ngModel]="followUp()" (ngModelChange)="followUp.set($event)">
+            </mat-form-field>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button mat-stroked-button (click)="salvaNote()" [disabled]="operazione() !== ''"><mat-icon>save</mat-icon> Salva</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+}

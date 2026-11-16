@@ -1,0 +1,86 @@
+.campo-ricerca { width: 260px; }
+.campo-fonte { width: 140px; }
+
+.avviso-followup {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff3e0;
+  color: #e65100;
+  border-radius: 16px;
+  padding: 4px 12px 4px 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.vuoto {
+  text-align: center;
+  padding: 60px 0;
+  color: #6b7280;
+  mat-icon { font-size: 56px; width: 56px; height: 56px; }
+}
+
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(190px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  align-items: start;
+}
+
+.colonna {
+  background: #e9edf3;
+  border-radius: 10px;
+  padding: 8px;
+  min-height: 300px;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    font-size: 13px;
+    padding: 6px 8px 10px;
+    border-top: 3px solid;
+    margin: -8px -8px 8px;
+    border-radius: 10px 10px 0 0;
+    background: #fff;
+  }
+
+  .conteggio {
+    background: #e3e7ee;
+    border-radius: 10px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  &.cdk-drop-list-dragging { background: #dbe4f1; }
+}
+
+.scheda {
+  display: block;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .12);
+  text-decoration: none;
+  color: inherit;
+  cursor: grab;
+  border-left: 3px solid transparent;
+
+  &:hover { box-shadow: 0 3px 8px rgba(0, 0, 0, .18); }
+  &.in-ritardo { border-left-color: #ef6c00; }
+  &.cdk-drag-preview { box-shadow: 0 8px 20px rgba(0, 0, 0, .3); }
+  &.cdk-drag-placeholder { opacity: .3; }
+
+  .riga { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .titolo { font-weight: 500; font-size: 14px; line-height: 1.3; }
+  .azienda { font-size: 13px; margin-top: 2px; }
+  .dettagli { font-size: 12px; margin-top: 2px; span + span { margin-left: 4px; } }
+  .piede { display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-top: 8px; }
+  .icona-ritardo { font-size: 16px; width: 16px; height: 16px; color: #ef6c00; }
+}
+
+.punteggio.piccolo { min-width: 30px; height: 22px; font-size: 12px; }

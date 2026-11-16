@@ -1,0 +1,139 @@
+<div class="pagina stretta">
+  <div class="titolo-pagina">
+    <h1>Impostazioni</h1>
+    <span class="spazio"></span>
+    <button mat-stroked-button [matMenuTriggerFor]="menuPreset"><mat-icon>add</mat-icon> Aggiungi fornitore AI</button>
+    <mat-menu #menuPreset="matMenu">
+      @for (pr of impostazioni()?.presets ?? []; track pr.key) {
+        <button mat-menu-item (click)="aggiungi(pr)">
+          <span>{{ pr.name }}</span>
+          <span class="nota-menu">{{ pr.note }}</span>
+        </button>
+      }
+    </mat-menu>
+    <button mat-flat-button (click)="salva()" [disabled]="inCorso() || !modificato()"><mat-icon>save</mat-icon> Salva</button>
+  </div>
+
+  @if (caricamento() || inCorso()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <h2 class="sezione">I tuoi fornitori AI</h2>
+  <p class="muted intro">
+    L'app usa il <strong>numero 1</strong>. Se non risponde (chiave scaduta, credito finito, servizio giù) passa al numero 2,
+    e così via; in fondo c'è sempre la modalità base senza AI. Interruttore e frecce salvano subito; le modifiche ai campi
+    vanno confermate con <strong>Salva</strong>.
+  </p>
+
+  @if (fornitori().length === 0) {
+    <mat-card appearance="outlined" class="vuoto">
+      <mat-card-content>
+        <mat-icon>smart_toy</mat-icon>
+        <p>Nessun fornitore AI salvato: l'app lavora in modalità base. Aggiungine uno con il pulsante in alto
+          (Groq e Gemini sono gratuiti, Claude è a pagamento ma più preciso).</p>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @for (p of fornitori(); track $index; let i = $index) {
+    <mat-card appearance="outlined" class="fornitore" [class.spento]="!p.enabled">
+      <div class="riga">
+        <div class="ordine">{{ i + 1 }}</div>
+        <div class="info">
+          <div class="nome">{{ p.name || 'Nuovo fornitore' }}
+            <span class="stato" [class]="'stato ' + statoClasse(p)">{{ statoTesto(p) }}</span>
+          </div>
+          <div class="muted dettagli">
+            modello <code>{{ p.model || '—' }}</code>
+            · chiave {{ p.apiKeyPresent ? 'salvata (' + p.apiKeyHint + ')' : 'assente' }}
+            @if (p.lastCheckedAt) { · ultimo esito {{ p.lastCheckedAt | date:'d MMM, HH:mm' }} }
+          </div>
+          @if (p.lastMessage && p.lastStatus === 'ERRORE') {
+            <div class="errore">{{ p.lastMessage }}</div>
+          }
+        </div>
+        <mat-slide-toggle [checked]="p.enabled" (change)="attiva(i, $event.checked)" [disabled]="!p.id" matTooltip="Attivo / disattivato"></mat-slide-toggle>
+        <button mat-icon-button (click)="sposta(i, -1)" [disabled]="i === 0 || !p.id" matTooltip="Usa prima"><mat-icon>arrow_upward</mat-icon></button>
+        <button mat-icon-button (click)="sposta(i, 1)" [disabled]="i === fornitori().length - 1 || !p.id" matTooltip="Usa dopo"><mat-icon>arrow_downward</mat-icon></button>
+        <button mat-stroked-button (click)="prova(p)" [disabled]="inCorso() || !p.id || modificato()" matTooltip="Fa una chiamata di prova e aggiorna lo stato"><mat-icon>network_check</mat-icon> Prova</button>
+        <button mat-icon-button (click)="modifica(i)" matTooltip="Modifica chiave, modello, indirizzo"><mat-icon>{{ inModifica().has(i) ? 'expand_less' : 'edit' }}</mat-icon></button>
+        <button mat-icon-button (click)="rimuovi(i)" matTooltip="Rimuovi"><mat-icon>delete</mat-icon></button>
+      </div>
+
+      @if (inModifica().has(i)) {
+        <div class="modifica">
+          @if (presetDi(p); as pr) { <p class="muted piccolo">{{ pr.note }}</p> }
+          <div class="griglia">
+            <mat-form-field appearance="outline">
+              <mat-label>Nome</mat-label>
+              <input matInput [ngModel]="p.name" (ngModelChange)="aggiorna(i, 'name', $event)">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Modello</mat-label>
+              <input matInput [ngModel]="p.model" (ngModelChange)="aggiorna(i, 'model', $event)" [matAutocomplete]="auto">
+              <mat-autocomplete #auto="matAutocomplete">
+                @for (m of (p.id ? (modelli()[p.id] ?? []) : []); track m) {
+                  <mat-option [value]="m" (onSelectionChange)="scegliModello(i, m)">{{ m }}</mat-option>
+                }
+              </mat-autocomplete>
+              <button matSuffix mat-icon-button type="button" (click)="caricaModelli(p)" [disabled]="inCorso() || !p.id || modificato()"
+                      matTooltip="Chiedi al fornitore l'elenco dei modelli disponibili">
+                <mat-icon>list</mat-icon>
+              </button>
+              <mat-hint>Icona a destra: elenco dei modelli disponibili oggi</mat-hint>
+            </mat-form-field>
+            @if (p.type === 'OPENAI_COMPATIBLE') {
+              <mat-form-field appearance="outline" class="larga">
+                <mat-label>Indirizzo del servizio (base URL)</mat-label>
+                <input matInput [ngModel]="p.baseUrl" (ngModelChange)="aggiorna(i, 'baseUrl', $event)" placeholder="https://api.esempio.com/v1">
+              </mat-form-field>
+            }
+            <mat-form-field appearance="outline" class="larga">
+              <mat-label>{{ p.apiKeyPresent ? 'Chiave salvata (' + p.apiKeyHint + '): incolla qui solo per sostituirla' : 'Chiave / token' }}</mat-label>
+              <input matInput type="password" autocomplete="off" [ngModel]="p.apiKey ?? ''" (ngModelChange)="aggiorna(i, 'apiKey', $event)">
+              @if (p.apiKeyPresent) { <mat-icon matSuffix class="ok-icona">check_circle</mat-icon> }
+            </mat-form-field>
+          </div>
+          @if (p.type === 'OPENAI_COMPATIBLE') {
+            <mat-slide-toggle [checked]="p.jsonMode" (change)="aggiorna(i, 'jsonMode', $event.checked)">
+              Richiedi risposta JSON al servizio (consigliato; disattiva solo se il servizio dà errore)
+            </mat-slide-toggle>
+          }
+          @if (modificato()) {
+            <p class="muted piccolo">Modifiche non salvate: premi <strong>Salva</strong> in alto.</p>
+          }
+        </div>
+      }
+    </mat-card>
+  }
+
+  <mat-card appearance="outlined" class="fornitore base">
+    <div class="riga">
+      <div class="ordine">{{ fornitori().length + 1 }}</div>
+      <div class="info">
+        <div class="nome">Modalità base (senza AI) <span class="stato ok">Sempre attiva</span></div>
+        <div class="muted dettagli">Ultima risorsa: gratis, offline, meno precisa. Non si può disattivare.</div>
+      </div>
+    </div>
+  </mat-card>
+
+  @if (impostazioni(); as s) {
+    <p class="muted piccolo">Le chiavi sono salvate solo su questo PC, in <code>{{ s.settingsFile }}</code></p>
+  }
+
+  <h2 class="sezione">Invio delle candidature</h2>
+  <mat-card appearance="outlined" class="fornitore">
+    <div class="riga">
+      <div class="info">
+        <div class="nome">Invio automatico senza conferma
+          <span class="stato" [class]="'stato ' + (invioAutomatico() ? 'ko' : 'neutro')">{{ invioAutomatico() ? 'Attivo: rischio blocco account' : 'Spento (consigliato)' }}</span>
+        </div>
+        <div class="muted dettagli">
+          Spento: l'app compila il modulo e si ferma prima di "Invia", tu controlli e premi tu (sicuro).
+          Acceso: l'app preme anche "Invia". LinkedIn e Indeed lo vietano e possono bloccare l'account.
+        </div>
+      </div>
+      <mat-slide-toggle [checked]="invioAutomatico()" (change)="cambiaInvioAutomatico($event.checked)"></mat-slide-toggle>
+    </div>
+  </mat-card>
+</div>

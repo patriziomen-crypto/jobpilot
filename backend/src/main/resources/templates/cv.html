@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'CV ' + ${profile.fullName}">CV</title>
+    <style>
+        @page { size: A4; margin: 14mm 15mm; }
+        body { font-family: 'Calibri', Helvetica, Arial, sans-serif; font-size: 10.5pt; color: #222; line-height: 1.35; }
+        header { border-bottom: 2px solid #1f4e79; padding-bottom: 6px; margin-bottom: 10px; }
+        h1 { font-size: 22pt; margin: 0; color: #1f4e79; letter-spacing: 0.5px; }
+        .headline { font-size: 12.5pt; color: #444; margin: 2px 0 4px 0; }
+        .contacts { font-size: 9.5pt; color: #555; }
+        .contacts span { margin-right: 12px; }
+        h2 { font-size: 11.5pt; color: #1f4e79; text-transform: uppercase; letter-spacing: 1px;
+             border-bottom: 1px solid #c8d3e0; padding-bottom: 2px; margin: 12px 0 6px 0; }
+        .item { margin-bottom: 7px; page-break-inside: avoid; }
+        .item .title { font-weight: bold; }
+        .item .meta { color: #666; font-size: 9.5pt; }
+        ul { margin: 3px 0 0 0; padding-left: 16px; }
+        li { margin: 1px 0; }
+        table.skills { border-collapse: collapse; width: 100%; }
+        table.skills td { vertical-align: top; padding: 2px 0; }
+        table.skills td.cat { width: 32%; font-weight: bold; color: #333; }
+        .summary { text-align: justify; }
+    </style>
+</head>
+<body>
+<header>
+    <h1 th:text="${profile.fullName}">Nome Cognome</h1>
+    <div class="headline" th:text="${cv.headline}">Titolo</div>
+    <div class="contacts">
+        <span th:if="${profile.location}" th:text="${profile.location}">Luogo</span>
+        <span th:if="${profile.phone}" th:text="${profile.phone}">Telefono</span>
+        <span th:if="${profile.email}" th:text="${profile.email}">Email</span>
+        <span th:if="${profile.linkedinUrl}" th:text="${profile.linkedinUrl}">LinkedIn</span>
+        <span th:if="${profile.githubUrl}" th:text="${profile.githubUrl}">GitHub</span>
+    </div>
+</header>
+
+<section th:if="${cv.summary}">
+    <h2>Profilo professionale</h2>
+    <p class="summary" th:text="${cv.summary}">Sommario</p>
+</section>
+
+<section th:if="${!#lists.isEmpty(cv.experiences)}">
+    <h2>Esperienza professionale</h2>
+    <div class="item" th:each="e : ${cv.experiences}">
+        <div class="title" th:text="${e.role} + ' — ' + ${e.company}">Ruolo — Azienda</div>
+        <div class="meta" th:if="${e.periodLabel}" th:text="${e.periodLabel}">Periodo</div>
+        <ul th:if="${!#lists.isEmpty(e.bullets)}">
+            <li th:each="b : ${e.bullets}" th:text="${b}">Punto</li>
+        </ul>
+    </div>
+</section>
+
+<section th:if="${!#lists.isEmpty(cv.educations)}">
+    <h2>Formazione e certificazioni</h2>
+    <div class="item" th:each="e : ${cv.educations}">
+        <div class="title" th:text="${e.title} + ' — ' + ${e.institution}">Titolo — Istituto</div>
+        <div class="meta" th:if="${e.periodLabel}" th:text="${e.periodLabel}">Periodo</div>
+        <ul th:if="${!#lists.isEmpty(e.details)}">
+            <li th:each="d : ${e.details}" th:text="${d}">Dettaglio</li>
+        </ul>
+    </div>
+</section>
+
+<section th:if="${!#lists.isEmpty(cv.skillGroups)}">
+    <h2>Competenze tecniche e strumenti</h2>
+    <table class="skills">
+        <tr th:each="g : ${cv.skillGroups}">
+            <td class="cat" th:text="${g.category}">Categoria</td>
+            <td th:text="${#strings.listJoin(g.skills, ', ')}">Elenco</td>
+        </tr>
+    </table>
+</section>
+
+<section th:if="${profile.languages != null or profile.extraInfo != null}">
+    <h2>Lingue e informazioni aggiuntive</h2>
+    <table class="skills">
+        <tr th:if="${profile.languages}"><td class="cat">Lingue</td><td th:text="${profile.languages}">Lingue</td></tr>
+        <tr th:if="${profile.extraInfo}"><td class="cat">Altro</td><td th:text="${profile.extraInfo}">Altro</td></tr>
+    </table>
+</section>
+</body>
+</html>

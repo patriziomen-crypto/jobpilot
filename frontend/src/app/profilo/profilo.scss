@@ -1,0 +1,15 @@
+.stretta { max-width: 1000px; }
+.scheda { padding: 16px 4px; }
+.pieno { width: 100%; }
+.griglia-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.griglia-3 { display: grid; grid-template-columns: 1.2fr 1fr .8fr; gap: 0 12px; }
+.voce { padding: 12px 12px 4px; margin-bottom: 12px; }
+.azioni-voce { display: flex; justify-content: flex-end; }
+.riga-competenza, .riga-risposta {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.riga-competenza { grid-template-columns: 1fr 1fr auto auto auto; }
+.riga-risposta { grid-template-columns: 1fr 1.5fr auto; }

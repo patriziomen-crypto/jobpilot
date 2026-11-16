@@ -1,0 +1,10 @@
+.stretta { max-width: 900px; }
+.pieno { width: 100%; }
+.griglia {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+.check { padding-bottom: 20px; }
+.azioni { display: flex; justify-content: flex-end; margin-top: 8px; }

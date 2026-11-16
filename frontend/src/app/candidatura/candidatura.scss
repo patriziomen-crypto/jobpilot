@@ -1,0 +1,47 @@
+.intestazione { flex: 1; min-width: 0; h1 { margin: 0 0 2px; } }
+.campo-stato { width: 170px; }
+.attesa { margin: 0 0 12px; color: #1f4e79; font-weight: 500; }
+
+.colonne {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 16px;
+  align-items: start;
+}
+.colonna-passi, .colonna-info { display: flex; flex-direction: column; gap: 16px; }
+
+.passo .numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #cfd8e3;
+  color: #1f2430;
+  font-weight: 700;
+  border-radius: 50%;
+  &.fatto { background: #2e7d32; color: #fff; }
+}
+
+.riga-punteggio { display: flex; align-items: flex-start; gap: 14px; p { margin: 2px 0 10px; } }
+.griglia-analisi { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+h4 { display: flex; align-items: center; gap: 6px; margin: 10px 0 4px; font-size: 14px; font-weight: 500; }
+ul { margin: 0; padding-left: 20px; li { margin: 2px 0; } }
+.ok { color: #2e7d32; }
+.ko { color: #c62828; }
+.redflag { background: #fff3e0; border-radius: 8px; padding: 6px 12px 8px; margin-top: 10px; h4 { color: #e65100; } }
+.piccolo { font-size: 12px; }
+.inline { font-size: 18px; width: 18px; height: 18px; vertical-align: text-bottom; }
+code { font-size: 12px; background: #f1f3f6; padding: 1px 4px; border-radius: 3px; word-break: break-all; }
+.pannello-lettera { margin-top: 8px; }
+.lettera { white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.5; margin: 0 0 8px; }
+.checklist { margin: 0 0 12px; padding-left: 20px; li { margin: 3px 0; } }
+.risposte { width: 100%; border-collapse: collapse; td { padding: 4px 6px; border-bottom: 1px solid #eee; vertical-align: middle; } .domanda { font-weight: 500; width: 40%; } }
+.inviata { margin-top: 12px; font-weight: 500; }
+.invio-assistito { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.pannello-invio { background: #f4f6fa; border-radius: 8px; padding: 10px 12px; margin: 8px 0 12px; &.in-corso { border-left: 3px solid #1f4e79; } }
+.esito { font-weight: 500; margin: 6px 0; }
+.log-invio { background: #1e2430; color: #d7e0ea; border-radius: 6px; padding: 8px 10px; font-size: 12px; line-height: 1.5; max-height: 200px; overflow: auto; white-space: pre-wrap; margin: 8px 0; }
+.azioni-invio { display: flex; gap: 8px; flex-wrap: wrap; }
+.manuale { margin-top: 8px; summary { cursor: pointer; color: #1f4e79; font-weight: 500; } }
+details ul { margin: 4px 0 8px; }
+.pieno { width: 100%; }
+mat-card-actions { gap: 8px; flex-wrap: wrap; }

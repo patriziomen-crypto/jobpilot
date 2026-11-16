@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'Lettera di presentazione - ' + ${profile.fullName}">Lettera</title>
+    <style>
+        @page { size: A4; margin: 22mm 22mm; }
+        body { font-family: 'Calibri', Helvetica, Arial, sans-serif; font-size: 11pt; color: #222; line-height: 1.5; }
+        .sender { margin-bottom: 18px; }
+        .sender .name { font-weight: bold; font-size: 13pt; color: #1f4e79; }
+        .sender div { font-size: 10pt; color: #555; }
+        .recipient { margin-bottom: 18px; font-size: 10.5pt; }
+        .date { text-align: right; margin-bottom: 18px; font-size: 10.5pt; color: #555; }
+        .subject { font-weight: bold; margin-bottom: 14px; }
+        p { margin: 0 0 11px 0; text-align: justify; }
+        .closing { margin-top: 18px; }
+        .signature { margin-top: 28px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="sender">
+    <div class="name" th:text="${profile.fullName}">Nome Cognome</div>
+    <div th:if="${profile.location}" th:text="${profile.location}">Luogo</div>
+    <div th:if="${profile.phone}" th:text="${profile.phone}">Telefono</div>
+    <div th:if="${profile.email}" th:text="${profile.email}">Email</div>
+</div>
+
+<div class="recipient">
+    <div th:text="${offer.company != null ? offer.company : 'Spett.le Azienda'}">Azienda</div>
+    <div th:if="${offer.location}" th:text="${offer.location}">Luogo</div>
+</div>
+
+<div class="date" th:text="${today}">Data</div>
+
+<div class="subject" th:if="${letter.subject}" th:text="'Oggetto: ' + ${letter.subject}">Oggetto</div>
+
+<p th:if="${letter.greeting}" th:text="${letter.greeting}">Gentile ...,</p>
+<p th:each="par : ${letter.paragraphs}" th:text="${par}">Paragrafo</p>
+
+<p class="closing" th:if="${letter.closing}" th:text="${letter.closing}">Cordiali saluti,</p>
+<div class="signature" th:text="${profile.fullName}">Firma</div>
+</body>
+</html>

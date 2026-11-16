@@ -1,0 +1,147 @@
+<div class="pagina">
+  <div class="titolo-pagina">
+    <h1>Ricerca automatica</h1>
+    <span class="muted">JobPilot va su LinkedIn e Indeed, prende gli annunci nuovi e li mette in dashboard</span>
+  </div>
+
+  @if (caricamento() || salvataggio()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <mat-card appearance="outlined" class="account">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>account_circle</mat-icon>
+      <mat-card-title>Account collegati</mat-card-title>
+      <mat-card-subtitle>Il browser dell'app (Edge, profilo separato dal tuo) ricorda gli accessi: entri una volta e restano memorizzati</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @for (sito of siti; track sito.key) {
+        @let s = sessione(sito.key);
+        <div class="riga-account">
+          <div class="info-account">
+            <div class="nome-account">{{ sito.nome }}
+              <span class="stato" [class]="'stato ' + statoClasse(s)">{{ statoTesto(s) }}</span>
+            </div>
+            <div class="muted dettagli-account">
+              {{ sito.nota }}
+              @if (s?.checkedAt) { · verificato {{ s?.checkedAt | date:'d MMM, HH:mm' }} }
+              @if (s?.message && s?.known) { · {{ s?.message }} }
+            </div>
+          </div>
+          @if (s?.loggedIn) {
+            <button mat-stroked-button type="button" (click)="accedi(sito.key)" [disabled]="browser()?.browserBusy && !browser()?.loginWindowOpen"
+                    matTooltip="Apre il sito nella finestra dell'app, per cambiare account o controllare">
+              <mat-icon>open_in_new</mat-icon> Apri
+            </button>
+            <button mat-stroked-button type="button" class="warn" (click)="disconnetti(sito.key)" [disabled]="browser()?.browserBusy"
+                    matTooltip="Cancella l'accesso memorizzato nel browser dell'app (il tuo browser normale non c'entra)">
+              <mat-icon>logout</mat-icon> Disconnetti
+            </button>
+          } @else {
+            <button mat-flat-button type="button" (click)="accedi(sito.key)" [disabled]="browser()?.browserBusy && !browser()?.loginWindowOpen">
+              <mat-icon>login</mat-icon> Accedi
+            </button>
+          }
+        </div>
+      }
+      @if (browser(); as b) {
+        @if (b.loginWindowOpen) {
+          <p class="avviso-browser"><mat-icon>info</mat-icon> Finestra di accesso aperta: puoi entrare in entrambi i siti (una scheda ciascuno). Quando hai finito, chiudi la finestra: lo stato si aggiorna da solo.</p>
+        } @else if (b.browserBusy) {
+          <p class="avviso-browser muted"><mat-icon>hourglass_top</mat-icon> Browser dell'app in uso: {{ b.browserOwner }}. Aspetta che finisca.</p>
+        }
+      }
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button type="button" (click)="mostraLogAccessi.set(!mostraLogAccessi())">{{ mostraLogAccessi() ? 'Nascondi dettagli' : 'Dettagli' }}</button>
+      <button mat-stroked-button type="button" (click)="verifica()" [disabled]="browser()?.browserBusy" matTooltip="Riapre il browser in modo invisibile e controlla gli accessi">
+        <mat-icon>refresh</mat-icon> Verifica adesso
+      </button>
+    </mat-card-actions>
+    @if (mostraLogAccessi() && browser()?.log?.length) {
+      <pre class="log log-accessi">@for (riga of browser()?.log; track $index) {{{ riga }}
+}</pre>
+    }
+  </mat-card>
+
+  <div class="colonne">
+    @if (impostazioni(); as s) {
+      <mat-card appearance="outlined">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>tune</mat-icon>
+          <mat-card-title>Cosa cercare</mat-card-title>
+          <mat-card-subtitle>Una parola chiave per riga: ogni riga è una ricerca separata</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="pieno">
+            <mat-label>Parole chiave</mat-label>
+            <textarea matInput rows="5" [ngModel]="paroleChiave()" (ngModelChange)="paroleChiave.set($event)"
+                      placeholder="junior java developer&#10;sviluppatore junior&#10;stage sviluppatore software"></textarea>
+          </mat-form-field>
+          <div class="griglia">
+            <mat-form-field appearance="outline">
+              <mat-label>Zona</mat-label>
+              <input matInput [ngModel]="s.location" (ngModelChange)="aggiorna('location', $event)" placeholder="Roma, Lazio, Italia">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Ultimi giorni</mat-label>
+              <input matInput type="number" min="1" max="30" [ngModel]="s.days" (ngModelChange)="aggiorna('days', +$event)">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Max nuovi per ricerca</mat-label>
+              <input matInput type="number" min="1" max="50" [ngModel]="s.maxPerQuery" (ngModelChange)="aggiorna('maxPerQuery', +$event)">
+            </mat-form-field>
+          </div>
+          <div class="toggles">
+            <mat-slide-toggle [checked]="s.linkedin" (change)="aggiorna('linkedin', $event.checked)">LinkedIn (ricerca senza account)</mat-slide-toggle>
+            <mat-slide-toggle [checked]="s.indeed" (change)="aggiorna('indeed', $event.checked)">Indeed (apre una finestra di Edge; serve l'accesso, vedi "Account collegati")</mat-slide-toggle>
+            <mat-slide-toggle [checked]="s.remote" (change)="aggiorna('remote', $event.checked)">Includi remoto e ibrido</mat-slide-toggle>
+            <mat-slide-toggle [checked]="s.autoAnalyze" (change)="aggiorna('autoAnalyze', $event.checked)">Analizza subito i nuovi annunci (AI o modalità base)</mat-slide-toggle>
+            <mat-slide-toggle [checked]="s.scheduled" (change)="aggiorna('scheduled', $event.checked)">Cerca da sola ogni mattina alle 8 (se l'app è aperta)</mat-slide-toggle>
+          </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-stroked-button (click)="salva()" [disabled]="salvataggio()"><mat-icon>save</mat-icon> Salva</button>
+          @if (stato()?.running) {
+            <button mat-flat-button color="warn" (click)="ferma()"><mat-icon>stop</mat-icon> Ferma</button>
+          } @else {
+            <button mat-flat-button (click)="cerca()" [disabled]="salvataggio()"><mat-icon>travel_explore</mat-icon> Cerca ora</button>
+          }
+        </mat-card-actions>
+      </mat-card>
+    }
+
+    <mat-card appearance="outlined" class="stato">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>{{ stato()?.running ? 'autorenew' : 'history' }}</mat-icon>
+        <mat-card-title>{{ stato()?.running ? 'Ricerca in corso' : 'Ultima ricerca' }}@if (stato()?.profileName) { per {{ stato()?.profileName }} }</mat-card-title>
+        <mat-card-subtitle>
+          @if (stato(); as st) {
+            @if (st.startedAt) { avviata {{ st.startedAt | date:'d MMM, HH:mm' }} }
+            @if (st.finishedAt) { · finita {{ st.finishedAt | date:'HH:mm' }} }
+            @if (!st.startedAt) { nessuna ricerca ancora eseguita }
+          }
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (stato(); as st) {
+          @if (st.running) {
+            <mat-progress-bar mode="indeterminate" />
+            <p class="corrente">{{ st.current }}</p>
+          }
+          <div class="contatori">
+            <div><span class="n">{{ st.found }}</span> visti</div>
+            <div><span class="n">{{ st.imported }}</span> nuovi</div>
+            <div><span class="n">{{ st.analyzed }}</span> analizzati</div>
+            <div><span class="n" [class.err]="st.errors > 0">{{ st.errors }}</span> errori</div>
+          </div>
+          <pre class="log">@for (riga of st.log; track $index) {{{ riga }}
+}</pre>
+          @if (!st.running && st.imported > 0) {
+            <a mat-flat-button routerLink="/"><mat-icon>view_kanban</mat-icon> Vai alla dashboard</a>
+          }
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

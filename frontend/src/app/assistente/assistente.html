@@ -1,0 +1,52 @@
+@if (aperto()) {
+  <div class="pannello">
+    <div class="testata">
+      <mat-icon>smart_toy</mat-icon>
+      <div class="titoli">
+        <div class="titolo">Assistente JobPilot</div>
+        <div class="sotto">Usa i fornitori AI attivi nelle Impostazioni</div>
+      </div>
+      <button mat-icon-button (click)="nuovaChat()" matTooltip="Nuova conversazione" [disabled]="inCorso()"><mat-icon>add_comment</mat-icon></button>
+      <button mat-icon-button (click)="apri()" matTooltip="Chiudi"><mat-icon>close</mat-icon></button>
+    </div>
+
+    <div class="messaggi" #lista>
+      @if (messaggi().length === 0 && caricato()) {
+        <div class="benvenuto">
+          <p>Ciao! Posso spiegarti come usare l'app, dirti a che punto sono le tue candidature e fare qualche cosa al posto tuo
+            (cambiare stato, analizzare, generare CV e lettera, avviare la ricerca, aprire una pagina).</p>
+          <div class="suggerimenti">
+            @for (s of suggerimenti; track s) {
+              <button mat-stroked-button type="button" (click)="invia(s)">{{ s }}</button>
+            }
+          </div>
+        </div>
+      }
+      @for (m of messaggi(); track $index) {
+        <div class="bolla" [class.utente]="m.role === 'user'" [class.assistente]="m.role === 'assistant'">
+          <div class="contenuto">{{ m.content }}</div>
+          @if (m.done?.length) {
+            <ul class="fatto">
+              @for (d of m.done; track $index) { <li><mat-icon>check_circle</mat-icon> {{ d }}</li> }
+            </ul>
+          }
+          @if (m.provider) { <div class="firma">{{ m.provider }}</div> }
+        </div>
+      }
+      @if (inCorso()) {
+        <div class="bolla assistente pensa"><mat-progress-bar mode="indeterminate" /></div>
+      }
+    </div>
+
+    <div class="scrivi">
+      <textarea rows="2" placeholder="Scrivi qui… (Invio per inviare, Maiusc+Invio per andare a capo)"
+                [ngModel]="testo()" (ngModelChange)="testo.set($event)" (keydown)="tasto($event)" [disabled]="inCorso()"></textarea>
+      <button mat-flat-button (click)="invia()" [disabled]="inCorso() || !testo().trim()"><mat-icon>send</mat-icon></button>
+    </div>
+  </div>
+}
+
+<button mat-fab extended class="fab" (click)="apri()" matTooltip="Assistente">
+  <mat-icon>{{ aperto() ? 'close' : 'smart_toy' }}</mat-icon>
+  {{ aperto() ? 'Chiudi' : 'Assistente' }}
+</button>

@@ -1,0 +1,118 @@
+<div class="pagina stretta">
+  <div class="titolo-pagina">
+    <h1>Il mio profilo</h1>
+    <span class="muted">È la fonte di verità: Claude può usare solo quello che c'è scritto qui.</span>
+    <button mat-flat-button (click)="salva()" [disabled]="salvataggio() || caricamento()">
+      <mat-icon>save</mat-icon> Salva
+    </button>
+  </div>
+
+  @if (caricamento() || salvataggio()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <form [formGroup]="form">
+    <mat-tab-group>
+      <mat-tab label="Dati">
+        <div class="scheda">
+          <div class="griglia-2">
+            <mat-form-field appearance="outline"><mat-label>Nome e cognome</mat-label><input matInput formControlName="fullName"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Titolo professionale</mat-label><input matInput formControlName="headline"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="location"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Telefono</mat-label><input matInput formControlName="phone"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput formControlName="email" type="email"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Profilo LinkedIn (URL)</mat-label><input matInput formControlName="linkedinUrl"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>GitHub (URL)</mat-label><input matInput formControlName="githubUrl"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Lingue</mat-label><input matInput formControlName="languages"></mat-form-field>
+          </div>
+          <mat-form-field appearance="outline" class="pieno">
+            <mat-label>Profilo professionale (riassunto)</mat-label>
+            <textarea matInput formControlName="summary" rows="5"></textarea>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="pieno">
+            <mat-label>Altre informazioni (patente, disponibilità…)</mat-label>
+            <input matInput formControlName="extraInfo">
+          </mat-form-field>
+        </div>
+      </mat-tab>
+
+      <mat-tab [label]="'Esperienze (' + experiences.length + ')'">
+        <div class="scheda" formArrayName="experiences">
+          @for (g of experiences.controls; track g; let i = $index) {
+            <mat-card appearance="outlined" [formGroupName]="i" class="voce">
+              <div class="griglia-3">
+                <mat-form-field appearance="outline"><mat-label>Ruolo</mat-label><input matInput formControlName="role"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Azienda</mat-label><input matInput formControlName="company"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Periodo</mat-label><input matInput formControlName="periodLabel" placeholder="es. 2025, 140 ore"></mat-form-field>
+              </div>
+              <mat-form-field appearance="outline" class="pieno">
+                <mat-label>Cosa hai fatto (un punto per riga)</mat-label>
+                <textarea matInput formControlName="bullets" rows="4"></textarea>
+              </mat-form-field>
+              <div class="azioni-voce">
+                <button mat-icon-button type="button" (click)="sposta(experiences, i, -1)" matTooltip="Sposta su"><mat-icon>arrow_upward</mat-icon></button>
+                <button mat-icon-button type="button" (click)="sposta(experiences, i, 1)" matTooltip="Sposta giù"><mat-icon>arrow_downward</mat-icon></button>
+                <button mat-icon-button type="button" (click)="rimuovi(experiences, i)" matTooltip="Rimuovi"><mat-icon>delete</mat-icon></button>
+              </div>
+            </mat-card>
+          }
+          <button mat-stroked-button type="button" (click)="aggiungi(experiences, nuovaEsperienza())"><mat-icon>add</mat-icon> Aggiungi esperienza</button>
+        </div>
+      </mat-tab>
+
+      <mat-tab [label]="'Formazione (' + educations.length + ')'">
+        <div class="scheda" formArrayName="educations">
+          @for (g of educations.controls; track g; let i = $index) {
+            <mat-card appearance="outlined" [formGroupName]="i" class="voce">
+              <div class="griglia-3">
+                <mat-form-field appearance="outline"><mat-label>Titolo</mat-label><input matInput formControlName="title"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Istituto</mat-label><input matInput formControlName="institution"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Periodo</mat-label><input matInput formControlName="periodLabel"></mat-form-field>
+              </div>
+              <mat-form-field appearance="outline" class="pieno">
+                <mat-label>Dettagli (un punto per riga)</mat-label>
+                <textarea matInput formControlName="details" rows="4"></textarea>
+              </mat-form-field>
+              <div class="azioni-voce">
+                <button mat-icon-button type="button" (click)="sposta(educations, i, -1)" matTooltip="Sposta su"><mat-icon>arrow_upward</mat-icon></button>
+                <button mat-icon-button type="button" (click)="sposta(educations, i, 1)" matTooltip="Sposta giù"><mat-icon>arrow_downward</mat-icon></button>
+                <button mat-icon-button type="button" (click)="rimuovi(educations, i)" matTooltip="Rimuovi"><mat-icon>delete</mat-icon></button>
+              </div>
+            </mat-card>
+          }
+          <button mat-stroked-button type="button" (click)="aggiungi(educations, nuovaFormazione())"><mat-icon>add</mat-icon> Aggiungi titolo</button>
+        </div>
+      </mat-tab>
+
+      <mat-tab [label]="'Competenze (' + skills.length + ')'">
+        <div class="scheda" formArrayName="skills">
+          <p class="muted">Raggruppa per categoria (es. "Linguaggi &amp; Web", "Strumenti &amp; IDE"): nel CV compaiono una riga per categoria.</p>
+          @for (g of skills.controls; track g; let i = $index) {
+            <div [formGroupName]="i" class="riga-competenza">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Categoria</mat-label><input matInput formControlName="category"></mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Competenza</mat-label><input matInput formControlName="name"></mat-form-field>
+              <button mat-icon-button type="button" (click)="sposta(skills, i, -1)" matTooltip="Sposta su"><mat-icon>arrow_upward</mat-icon></button>
+              <button mat-icon-button type="button" (click)="sposta(skills, i, 1)" matTooltip="Sposta giù"><mat-icon>arrow_downward</mat-icon></button>
+              <button mat-icon-button type="button" (click)="rimuovi(skills, i)" matTooltip="Rimuovi"><mat-icon>delete</mat-icon></button>
+            </div>
+          }
+          <button mat-stroked-button type="button" (click)="aggiungi(skills, nuovaCompetenza())"><mat-icon>add</mat-icon> Aggiungi competenza</button>
+        </div>
+      </mat-tab>
+
+      <mat-tab [label]="'Risposte pronte (' + standardAnswers.length + ')'">
+        <div class="scheda" formArrayName="standardAnswers">
+          <p class="muted">Le domande ricorrenti dei moduli di candidatura (anni di esperienza, RAL, disponibilità…) con la risposta da copiare.</p>
+          @for (g of standardAnswers.controls; track g; let i = $index) {
+            <div [formGroupName]="i" class="riga-risposta">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Domanda</mat-label><input matInput formControlName="question"></mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Risposta</mat-label><input matInput formControlName="answer"></mat-form-field>
+              <button mat-icon-button type="button" (click)="rimuovi(standardAnswers, i)" matTooltip="Rimuovi"><mat-icon>delete</mat-icon></button>
+            </div>
+          }
+          <button mat-stroked-button type="button" (click)="aggiungi(standardAnswers, nuovaRisposta())"><mat-icon>add</mat-icon> Aggiungi risposta</button>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </form>
+</div>

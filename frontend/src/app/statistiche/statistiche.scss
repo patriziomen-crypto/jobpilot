@@ -1,0 +1,11 @@
+.tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+.tile { padding: 14px 16px; .valore { font-size: 30px; font-weight: 500; color: #1f4e79; } .etichetta { font-size: 12px; color: #6b7280; } }
+.colonne { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.grafico { display: flex; gap: 8px; height: 180px; align-items: flex-end; padding-top: 8px; }
+.settimana { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.barre { flex: 1; display: flex; gap: 3px; align-items: flex-end; width: 100%; justify-content: center; }
+.barra { width: 40%; border-radius: 3px 3px 0 0; min-height: 2px; &.trovate { background: #9fc3e8; } &.inviate { background: #1f4e79; } }
+.asse { font-size: 11px; color: #6b7280; margin-top: 4px; }
+.tabella { width: 100%; border-collapse: collapse; td, th { padding: 5px 6px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; } .num { text-align: right; font-variant-numeric: tabular-nums; } th { font-weight: 500; color: #6b7280; font-size: 12px; } }
+.pallino { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.promemoria { list-style: none; padding: 0; margin: 0; li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eee; } mat-icon { color: #ef6c00; } a { font-weight: 500; } }

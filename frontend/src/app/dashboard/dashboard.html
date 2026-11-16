@@ -1,0 +1,75 @@
+<div class="pagina">
+  <div class="titolo-pagina">
+    <h1>Le mie candidature</h1>
+    @if (daSeguire() > 0) {
+      <span class="avviso-followup" matTooltip="Candidature inviate da più di 7 giorni senza risposta">
+        <mat-icon>notifications_active</mat-icon> {{ daSeguire() }} da ricontattare
+      </span>
+    }
+    <mat-form-field appearance="outline" class="campo-ricerca" subscriptSizing="dynamic">
+      <mat-label>Cerca</mat-label>
+      <input matInput [value]="ricerca()" (input)="ricerca.set($any($event.target).value)" placeholder="titolo, azienda, città">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="campo-fonte" subscriptSizing="dynamic">
+      <mat-label>Fonte</mat-label>
+      <mat-select [value]="fonte()" (valueChange)="fonte.set($event)">
+        <mat-option value="">Tutte</mat-option>
+        <mat-option value="LINKEDIN">LinkedIn</mat-option>
+        <mat-option value="INDEED">Indeed</mat-option>
+        <mat-option value="ALTRO">Altro</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-icon-button (click)="ricarica()" matTooltip="Aggiorna"><mat-icon>refresh</mat-icon></button>
+    <a mat-flat-button routerLink="/ricerca"><mat-icon>travel_explore</mat-icon> Cerca offerte</a>
+  </div>
+
+  @if (caricamento()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (!caricamento() && candidature().length === 0) {
+    <div class="vuoto">
+      <mat-icon>inbox</mat-icon>
+      <p>Nessuna candidatura ancora. Fai cercare a JobPilot le offerte su LinkedIn e Indeed.</p>
+      <a mat-flat-button routerLink="/ricerca"><mat-icon>travel_explore</mat-icon> Avvia la ricerca automatica</a>
+    </div>
+  }
+
+  <div class="kanban" cdkDropListGroup>
+    @for (stato of stati; track stato.value) {
+      <section class="colonna"
+               cdkDropList
+               [id]="'col-' + stato.value"
+               [cdkDropListData]="stato.value"
+               (cdkDropListDropped)="trascinata($event)">
+        <header [style.border-top-color]="stato.colore">
+          <span>{{ stato.label }}</span>
+          <span class="conteggio">{{ colonna(stato.value).length }}</span>
+        </header>
+
+        @for (c of colonna(stato.value); track c.id) {
+          <a class="scheda" [class.in-ritardo]="scaduta(c)" cdkDrag [cdkDragData]="c" [routerLink]="['/candidature', c.id]">
+            <div class="riga">
+              <span class="chip-fonte" [class]="'chip-fonte ' + c.job.source">{{ c.job.source }}</span>
+              @if (c.analysis) {
+                <span class="punteggio piccolo" [class]="'punteggio piccolo ' + classePunteggio(c.analysis.score)">{{ c.analysis.score }}</span>
+              }
+            </div>
+            <div class="titolo">{{ c.job.title }}</div>
+            <div class="azienda">{{ c.job.company || 'Azienda non indicata' }}</div>
+            <div class="dettagli muted">
+              @if (c.job.location) { <span>{{ c.job.location }}</span> }
+              @if (c.job.remote) { <span>· remoto</span> }
+            </div>
+            <div class="piede muted">
+              @if (c.sentAt) { <span>inviata {{ c.sentAt | date:'d MMM' }}</span> }
+              @else { <span>{{ c.job.foundAt | date:'d MMM' }}</span> }
+              @if (scaduta(c)) { <mat-icon class="icona-ritardo" matTooltip="Da ricontattare">schedule</mat-icon> }
+            </div>
+          </a>
+        }
+      </section>
+    }
+  </div>
+</div>

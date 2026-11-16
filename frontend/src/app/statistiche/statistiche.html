@@ -1,0 +1,105 @@
+<div class="pagina">
+  <div class="titolo-pagina">
+    <h1>Statistiche</h1>
+  </div>
+
+  @if (caricamento()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (stats(); as s) {
+    <div class="tiles">
+      <mat-card appearance="outlined" class="tile">
+        <div class="valore">{{ s.totali }}</div>
+        <div class="etichetta">offerte trovate</div>
+      </mat-card>
+      <mat-card appearance="outlined" class="tile">
+        <div class="valore">{{ s.inviate }}</div>
+        <div class="etichetta">candidature inviate</div>
+      </mat-card>
+      <mat-card appearance="outlined" class="tile">
+        <div class="valore">{{ s.tassoRisposta }}%</div>
+        <div class="etichetta">tasso di risposta ({{ s.conRisposta }} su {{ s.inviate }})</div>
+      </mat-card>
+      <mat-card appearance="outlined" class="tile">
+        <div class="valore">{{ s.colloqui }}</div>
+        <div class="etichetta">colloqui / offerte</div>
+      </mat-card>
+      <mat-card appearance="outlined" class="tile">
+        <div class="valore">{{ s.punteggioMedio ?? '–' }}</div>
+        <div class="etichetta">punteggio medio ({{ s.nonAnalizzate }} da analizzare)</div>
+      </mat-card>
+    </div>
+
+    <div class="colonne">
+      <mat-card appearance="outlined">
+        <mat-card-header><mat-card-title>Ultime 8 settimane</mat-card-title>
+          <mat-card-subtitle>offerte trovate (chiaro) e candidature inviate (scuro)</mat-card-subtitle></mat-card-header>
+        <mat-card-content>
+          <div class="grafico">
+            @for (w of s.settimane; track w.inizio) {
+              <div class="settimana">
+                <div class="barre">
+                  <div class="barra trovate" [style.height]="altezza(w.trovate)" [title]="w.trovate + ' trovate'"></div>
+                  <div class="barra inviate" [style.height]="altezza(w.inviate)" [title]="w.inviate + ' inviate'"></div>
+                </div>
+                <div class="asse">{{ w.inizio | date:'d MMM' }}</div>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined">
+        <mat-card-header><mat-card-title>Per stato</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <table class="tabella">
+            @for (st of stati; track st.value) {
+              <tr>
+                <td><span class="pallino" [style.background]="st.colore"></span> {{ st.label }}</td>
+                <td class="num">{{ conteggio(st.value) }}</td>
+              </tr>
+            }
+          </table>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined">
+        <mat-card-header><mat-card-title>Per fonte</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <table class="tabella">
+            <tr class="intestazione"><th>Fonte</th><th>Trovate</th><th>Inviate</th><th>Risposte</th><th>Punteggio</th></tr>
+            @for (f of s.perFonte; track f.source) {
+              <tr>
+                <td>{{ etichettaFonte(f.source) }}</td>
+                <td class="num">{{ f.totali }}</td>
+                <td class="num">{{ f.inviate }}</td>
+                <td class="num">{{ f.risposte }}</td>
+                <td class="num">{{ f.punteggioMedio ?? '–' }}</td>
+              </tr>
+            }
+          </table>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined">
+        <mat-card-header><mat-card-title>Da fare</mat-card-title></mat-card-header>
+        <mat-card-content>
+          @if (s.promemoria.length === 0) {
+            <p class="muted">Niente in sospeso.</p>
+          }
+          <ul class="promemoria">
+            @for (p of s.promemoria; track p.applicationId + p.tipo) {
+              <li>
+                <mat-icon>{{ p.tipo === 'DA_RICONTATTARE' ? 'schedule' : 'psychology' }}</mat-icon>
+                <a [routerLink]="['/candidature', p.applicationId]">{{ p.title }}</a>
+                <span class="muted">{{ p.company || '' }} ·
+                  {{ p.tipo === 'DA_RICONTATTARE' ? 'da ricontattare dal' : 'da analizzare, trovata il' }} {{ p.data | date:'d MMM' }}</span>
+              </li>
+            }
+          </ul>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

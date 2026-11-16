@@ -1,0 +1,54 @@
+<mat-toolbar class="barra">
+  <a routerLink="/" class="logo">
+    <mat-icon>flight_takeoff</mat-icon>
+    <span>JobPilot</span>
+  </a>
+  <nav>
+    <a mat-button routerLink="/" routerLinkActive="attivo" [routerLinkActiveOptions]="{ exact: true }">
+      <mat-icon>view_kanban</mat-icon> Dashboard
+    </a>
+    <a mat-button routerLink="/ricerca" routerLinkActive="attivo">
+      <mat-icon>travel_explore</mat-icon> Ricerca automatica
+    </a>
+    <a mat-button routerLink="/importa" routerLinkActive="attivo">
+      <mat-icon>add_circle</mat-icon> Importa
+    </a>
+    <a mat-button routerLink="/statistiche" routerLinkActive="attivo">
+      <mat-icon>insights</mat-icon> Statistiche
+    </a>
+    <a mat-button routerLink="/profilo" routerLinkActive="attivo">
+      <mat-icon>person</mat-icon> Profilo
+    </a>
+  </nav>
+  <span class="spazio"></span>
+
+  <button mat-button class="persona" [matMenuTriggerFor]="menuPersone" matTooltip="Persona di cui stai gestendo le candidature">
+    <mat-icon>account_circle</mat-icon>
+    {{ personaAttiva?.fullName ?? 'Persona' }}
+    <mat-icon>arrow_drop_down</mat-icon>
+  </button>
+  <mat-menu #menuPersone="matMenu">
+    @for (p of persone.persone(); track p.id) {
+      <button mat-menu-item (click)="persone.seleziona(p.id)" [disabled]="p.id === persone.attivaId()">
+        <mat-icon>{{ p.id === persone.attivaId() ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+        <span>{{ p.fullName }}</span>
+        <span class="sottotitolo">{{ p.headline }}</span>
+      </button>
+    }
+    <div class="separatore"></div>
+    <button mat-menu-item (click)="nuovaPersona()"><mat-icon>person_add</mat-icon> Nuova persona…</button>
+    @if (persone.persone().length > 1) {
+      <button mat-menu-item (click)="eliminaPersona()"><mat-icon>person_remove</mat-icon> Elimina persona attuale</button>
+    }
+  </mat-menu>
+
+  <a mat-icon-button routerLink="/impostazioni" routerLinkActive="attivo" matTooltip="Impostazioni (fornitori AI)">
+    <mat-icon>settings</mat-icon>
+  </a>
+</mat-toolbar>
+
+<main>
+  <router-outlet />
+</main>
+
+<app-assistente />

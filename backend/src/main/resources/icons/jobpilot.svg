@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2b6cb0"/>
+      <stop offset="1" stop-color="#1f4e79"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="url(#g)"/>
+  <!-- aereo stilizzato in decollo -->
+  <path d="M52 168 L132 116 L96 76 L116 70 L164 104 L204 86 C218 80 230 90 222 102 L190 130 L196 190 L178 194 L160 148 L120 166 L124 192 L108 196 L92 166 L52 168 Z" fill="#ffffff"/>
+  <rect x="44" y="200" width="168" height="14" rx="7" fill="#ffffff" opacity="0.85"/>
+</svg>

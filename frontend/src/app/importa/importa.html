@@ -1,0 +1,57 @@
+<div class="pagina stretta">
+  <div class="titolo-pagina">
+    <h1>Importa un'offerta</h1>
+  </div>
+
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <p class="muted">
+        Incolla l'indirizzo dell'annuncio: JobPilot prova a leggerlo da solo. Se il sito blocca il download
+        (succede spesso con Indeed e a volte con LinkedIn), incolla anche il testo dell'annuncio qui sotto.
+      </p>
+
+      <form [formGroup]="form" (ngSubmit)="importa()">
+        <mat-form-field appearance="outline" class="pieno">
+          <mat-label>Indirizzo dell'annuncio (URL)</mat-label>
+          <input matInput formControlName="url" placeholder="https://www.linkedin.com/jobs/view/...">
+          <mat-icon matPrefix>link</mat-icon>
+          @if (form.controls.url.hasError('pattern')) {
+            <mat-error>Deve iniziare con http:// o https://</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="pieno">
+          <mat-label>Testo dell'annuncio (facoltativo se l'URL si legge da solo)</mat-label>
+          <textarea matInput formControlName="text" rows="12"
+                    placeholder="Seleziona tutto il testo dell'annuncio sul sito, copia e incolla qui"></textarea>
+        </mat-form-field>
+
+        <div class="griglia">
+          <mat-form-field appearance="outline">
+            <mat-label>Titolo (facoltativo)</mat-label>
+            <input matInput formControlName="title">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Azienda (facoltativo)</mat-label>
+            <input matInput formControlName="company">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Luogo (facoltativo)</mat-label>
+            <input matInput formControlName="location">
+          </mat-form-field>
+          <mat-checkbox formControlName="remote" class="check">Lavoro da remoto</mat-checkbox>
+        </div>
+
+        @if (inCorso()) {
+          <mat-progress-bar mode="indeterminate" />
+        }
+
+        <div class="azioni">
+          <button mat-flat-button type="submit" [disabled]="inCorso() || manca || form.invalid">
+            <mat-icon>download</mat-icon> Importa
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

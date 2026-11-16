@@ -1,0 +1,35 @@
+# Build e dipendenze
+backend/target/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+dist/
+
+# Configurazioni locali con credenziali
+backend/src/main/resources/application-local.*
+*.env
+.env*
+
+# Output dell'app (PDF generati, log)
+output/
+*.log
+scripts/*.log
+
+# Archivi scaricati e file di sistema
+*.zip
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.iml
+
+# Build Angular copiata nel backend per il pacchetto desktop (generata)
+backend/src/main/resources/static/
+# Pacchetto desktop
+dist/
+
+# Permessi locali di Claude Code (specifici di questo PC)
+.claude/settings.local.json
+
+# Documenti personali (CV): restano sul disco, non su GitHub
+*.docx
